@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Job Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1152d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<div class="layout-container flex flex-col min-h-screen">
+<!-- Header -->
+<header class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">corporate_fare</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Admin Portal</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Jobs</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Applicants</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-1.5 gap-2 border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 placeholder:text-slate-400" placeholder="Search postings..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center gap-2 p-1 pl-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 transition-colors">
+<span class="text-sm font-medium hidden md:block">Alex Rivera</span>
+<div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="h-full w-full object-cover" data-alt="Professional avatar of an administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQiOmvQP4LZ4Tz2kW3WpyCk0Vs78FF5JpkdaM4n6vgUOe2VgUOQvTvLcx6R1fnG9wuykzT-Je--Uk-ROzz6RVwtymXJTmuv3dnBp2hPA7n6MhT_vB4Z8-qa3doGbGjwScpvgfs0EK8wsHMOp8X6BU5WvLYFF9obmIE6FjCp5FvWafXj9ng_MR_B15G5c0-YYO6ODTCYStBH0Sbe5z1HRSZDnJX_WR9bhCPG31cICxvxIHsMG-CMb0ubWKqC5HB5d4v2IDwtXev5sI"/>
+</div>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+<!-- Hero / Welcome Section -->
+<div class="mb-8">
+<h1 class="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Job Management Dashboard</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Manage active job postings and analyze applicant performance.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Upload Section -->
+<div class="lg:col-span-2 space-y-6">
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800">
+<h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+                                Upload Job Description (JD)
+                            </h2>
+</div>
+<div class="p-6">
+<div class="group relative flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 py-12 px-6 transition-all hover:border-primary/50 hover:bg-primary/5">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-full shadow-sm mb-4 text-primary">
+<span class="material-symbols-outlined text-4xl">picture_as_pdf</span>
+</div>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-semibold mb-1">Drag and drop JD here</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Support for PDF files up to 10MB</p>
+<button class="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-6 py-2 rounded-lg border border-slate-200 dark:border-slate-600 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors shadow-sm">
+                                    Select File
+                                </button>
+<input aria-label="Upload job description" class="absolute inset-0 opacity-0 cursor-pointer" type="file"/>
+</div>
+<div class="mt-6 flex justify-end">
+<button class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+<span>Submit JD</span>
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Active Jobs Preview (Generated Component) -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Recent Postings</h2>
+<button class="text-primary text-sm font-semibold hover:underline">View all</button>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded flex items-center justify-center">
+<span class="material-symbols-outlined">code</span>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Senior Frontend Engineer</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Engineering • Remote • Posted 2d ago</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold rounded-full">Active</span>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded flex items-center justify-center">
+<span class="material-symbols-outlined">palette</span>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Product Designer</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Design • New York, NY • Posted 4d ago</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold rounded-full">Active</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Stats & Activity -->
+<div class="space-y-6">
+<!-- Stats Card -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+<div class="flex justify-between items-start mb-4">
+<h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Applicants</h2>
+<span class="material-symbols-outlined text-primary/40">groups</span>
+</div>
+<div class="flex items-baseline gap-3">
+<p class="text-5xl font-black text-primary">142</p>
+<div class="flex items-center text-green-600 dark:text-green-400 text-sm font-bold bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+12%</span>
+</div>
+</div>
+<p class="text-slate-400 dark:text-slate-500 text-sm mt-4">Growth compared to last week</p>
+</section>
+<!-- Secondary Stat -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+<div class="flex justify-between items-start mb-4">
+<h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Interviews Scheduled</h2>
+<span class="material-symbols-outlined text-slate-300">calendar_today</span>
+</div>
+<div class="flex items-baseline gap-3">
+<p class="text-4xl font-black text-slate-900 dark:text-slate-100">28</p>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-6 overflow-hidden">
+<div class="bg-primary h-full rounded-full w-3/4"></div>
+</div>
+<p class="text-slate-400 dark:text-slate-500 text-xs mt-2">75% of target reach for October</p>
+</section>
+<!-- Quick Actions Card (Generated Component) -->
+<section class="bg-slate-900 text-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="font-bold text-lg mb-2">Need Help?</h3>
+<p class="text-slate-400 text-sm mb-4 leading-relaxed">Check out our guide for optimizing your job postings to reach more candidates.</p>
+<button class="w-full bg-white/10 hover:bg-white/20 border border-white/20 py-2 rounded-lg font-semibold text-sm transition-all">
+                                Read Documentation
+                            </button>
+</div>
+<!-- Abstract decorative background -->
+<div class="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+<div class="absolute -left-8 -top-8 w-24 h-24 bg-blue-400/10 rounded-full blur-2xl"></div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer (Simple) -->
+<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 px-6 mt-12">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-slate-500 dark:text-slate-400 text-sm">© 2023 Admin Portal Software Company. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-slate-400 hover:text-primary transition-colors text-sm" href="#">Privacy Policy</a>
+<a class="text-slate-400 hover:text-primary transition-colors text-sm" href="#">Terms of Service</a>
+<a class="text-slate-400 hover:text-primary transition-colors text-sm" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>
