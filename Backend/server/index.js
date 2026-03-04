@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const client = require('./config/chromadb');
 require('dotenv').config()
 const PORT = process.env.PORT;
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 
 app.use(express.json());
@@ -12,6 +13,10 @@ async function initializeChroma() {
  
   const collection = await client.getOrCreateCollection({
     name: "JD_embeddings",
+  });
+ 
+  const resumeCollection = await client.getOrCreateCollection({
+    name: "resume_embeddings",
   });
   
   console.log("ChromaDB is ready!");
@@ -22,18 +27,7 @@ initializeChroma();
 connectDB();
 
 
-app.get('/', (req, res) => {
-  res.send('Hello, World! Your API is alive.');
-});
-
-
-app.post('/data', (req, res) => {
-  const receivedData = req.body;
-  res.json({
-    message: "Data received successfully!",
-    data: receivedData
-  });
-});
+app.use("/api/applicants", applicantRouter);
 
 // Start the server
 app.listen(PORT, () => {

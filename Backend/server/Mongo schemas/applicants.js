@@ -13,6 +13,11 @@ const Applicants = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email']
   },
+  // New field to store the resume path or text
+  resume: {
+    type: String,
+    required: [true, 'Please add a resume']
+  },
   createdAt: {
     type: Date,
     default: Date.now
