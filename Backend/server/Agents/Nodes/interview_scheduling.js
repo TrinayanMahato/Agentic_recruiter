@@ -3,7 +3,7 @@ const { bulkScheduleSearch } = require('../utility_functions/scheduler.js');
 const InterviewSchedule = require("../../Mongo schemas/InterviewSchedule.js");
 
 const schedulingNode = async (state) => {
-    // Note: We use the keys exactly as defined in your RecruiterState
+    
     const { shortlistedCandidates, jobId, jdText, adminRefreshToken } = state;
     const jobTitle = state.jobTitle || "Software Engineer"; // Fallback if not in state
 

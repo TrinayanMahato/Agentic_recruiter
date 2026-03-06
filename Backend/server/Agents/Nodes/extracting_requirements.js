@@ -13,6 +13,7 @@ const llm = new ChatOpenAI({
 
 const extractingRequirementsNode = async (state) => {
     console.log("--- Executing Requirement Extraction Node ---");
+    
 
     // 1. Get JD path from state
     const filePath = state.jdLink;

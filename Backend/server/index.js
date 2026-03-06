@@ -3,6 +3,8 @@ const app = express();
 const connectDB = require('./config/db');
 
 const client = require('./config/chromadb');
+const startCronJobs = require('./cronJob');
+const applicantRouter = require('./routes/Applicant_router');
 require('dotenv').config()
 const PORT = process.env.PORT;
 app.use("/public", express.static(path.join(__dirname, "public")));
@@ -10,21 +12,22 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 async function initializeChroma() {
- 
+
   const collection = await client.getOrCreateCollection({
     name: "JD_embeddings",
   });
- 
+
   const resumeCollection = await client.getOrCreateCollection({
     name: "resume_embeddings",
   });
-  
+
   console.log("ChromaDB is ready!");
   return collection;
 }
 
 initializeChroma();
 connectDB();
+startCronJobs();
 
 
 app.use("/api/applicants", applicantRouter);
