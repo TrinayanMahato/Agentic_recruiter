@@ -3,7 +3,6 @@ const app = express();
 const connectDB = require('./config/db');
 
 const client = require('./config/chromadb');
-const startCronJobs = require('./cronJob');
 const applicantRouter = require('./routes/Applicant_router');
 require('dotenv').config()
 const PORT = process.env.PORT;
@@ -27,8 +26,6 @@ async function initializeChroma() {
 
 initializeChroma();
 connectDB();
-startCronJobs();
-
 
 app.use("/api/applicants", applicantRouter);
 
