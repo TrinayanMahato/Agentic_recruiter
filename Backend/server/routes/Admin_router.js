@@ -23,6 +23,6 @@ router.post('/shortlist', shortlistCandidates);
 router.post('/reject-jd', uploadJD.single('jd'), rejectAndResubmitJD);
 
 // SSE — admin subscribes to real-time interview schedule pushes
-router.post('/interview-stream', connectInterviewStream);
+router.get('/interview-stream/:userId', connectInterviewStream);
 
 module.exports = router;

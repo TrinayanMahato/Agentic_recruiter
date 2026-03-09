@@ -1,6 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 const Admin = () => {
+    const [title, setTitle] = useState('');
+    const [file, setFile] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!title || !file) {
+            alert("Please provide both a Job Title and a JD PDF file.");
+            return;
+        }
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("jd", file);
+
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/admin/upload-job`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            const data = response.data;
+
+            // Save IDs to local storage
+            localStorage.setItem("jobId", data.jobId);
+            localStorage.setItem("threadId", data.threadId);
+            alert("JD Uploaded and graph processing started successfully!");
+            setTitle("");
+            setFile(null);
+        } catch (error) {
+            console.error("Upload error:", error);
+            const errorMsg = error.response?.data?.message || error.response?.data?.error || "Failed to upload JD";
+            alert(`Error: ${errorMsg}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="bg-[#f6f6f8] dark:bg-[#101622] text-slate-900 dark:text-slate-100 min-h-screen font-sans flex flex-col">
             {/* Header */}
@@ -51,20 +97,35 @@ const Admin = () => {
                                 </h2>
                             </div>
                             <div className="p-6">
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Job Title</label>
+                                    <input
+                                        type="text"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#1152d4] focus:ring-1 focus:ring-[#1152d4] outline-none transition-all"
+                                        placeholder="e.g. Senior Full Stack Engineer"
+                                    />
+                                </div>
                                 <div className="group relative flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 py-12 px-6 transition-all hover:border-[#1152d4]/50 hover:bg-[#1152d4]/5">
                                     <div className="bg-white dark:bg-slate-900 p-4 rounded-full shadow-sm mb-4 text-[#1152d4]">
                                         <span className="material-symbols-outlined text-4xl">picture_as_pdf</span>
                                     </div>
-                                    <h3 className="text-slate-900 dark:text-slate-100 text-lg font-semibold mb-1">Drag and drop JD here</h3>
+                                    <h3 className="text-slate-900 dark:text-slate-100 text-lg font-semibold mb-1">
+                                        {file ? file.name : "Drag and drop JD here"}
+                                    </h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Support for PDF files up to 10MB</p>
                                     <button className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-6 py-2 rounded-lg border border-slate-200 dark:border-slate-600 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors shadow-sm">
                                         Select File
                                     </button>
-                                    <input aria-label="Upload job description" className="absolute inset-0 opacity-0 cursor-pointer" type="file" />
+                                    <input aria-label="Upload job description" className="absolute inset-0 opacity-0 cursor-pointer" type="file" onChange={handleFileChange} />
                                 </div>
                                 <div className="mt-6 flex justify-end">
-                                    <button className="bg-[#1152d4] hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                                        <span>Submit JD</span>
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="bg-[#1152d4] hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                                        <span>{loading ? "Submitting..." : "Submit JD"}</span>
                                         <span className="material-symbols-outlined text-sm">send</span>
                                     </button>
                                 </div>

@@ -84,8 +84,8 @@ const shortlistCandidates = async (req, res) => {
             configurable: { thread_id: threadId }
         };
 
-
-        await recruiterGraph.invoke(null, config);
+        // Inject reupload: "no" to ensure it routes to shortlist_candidates
+        await recruiterGraph.invoke({ reupload: "no" }, config);
 
         res.status(200).json({ message: "Shortlisting started successfully!" });
     } catch (error) {
@@ -106,8 +106,8 @@ const rejectAndResubmitJD = async (req, res) => {
             configurable: { thread_id: threadId }
         };
 
-        // Reinvoke the graph with the new jdLink in state
-        await recruiterGraph.invoke({ jdLink: req.file.path }, config);
+        // Reinvoke the graph with the new jdLink in state, and set reupload to "yes" for conditional router
+        await recruiterGraph.invoke({ jdLink: req.file.path, reupload: "yes" }, config);
 
         res.status(200).json({ message: "New JD submitted and graph restarted successfully!" });
     } catch (error) {
@@ -119,7 +119,7 @@ const rejectAndResubmitJD = async (req, res) => {
 const interviewConnections = new Map();
 
 const connectInterviewStream = async (req, res) => {
-    const { userId } = req.body;
+    const userId = req.params.userId;
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

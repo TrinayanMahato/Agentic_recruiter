@@ -29,7 +29,19 @@ workflow
   .addEdge("embedding_requirements", "linkedin_posting")
   .addEdge("linkedin_posting", "waitingnode")
   .addEdge("waitingnode", "sending_admin_noti")
-  .addEdge("sending_admin_noti", "shortlist_candidates")   // Graph pauses HERE (interruptAfter)
+
+  // Conditionally route based on human decision
+  .addConditionalEdges(
+    "sending_admin_noti",
+    (state) => {
+      // Loop back if reupload is "yes", else proceed to shortlist
+      if (state.reupload === "yes") {
+        return "extracting_requirements";
+      }
+      return "shortlist_candidates";
+    }
+  )
+
   .addEdge("shortlist_candidates", "interview_scheduling")
   .addEdge("interview_scheduling", END);
 

@@ -1,13 +1,16 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
+
 const connectDB = require('./config/db');
 
 const client = require('./config/chromadb');
 const applicantRouter = require('./routes/Applicant_router');
-require('dotenv').config()
-const PORT = process.env.PORT;
+const adminRouter = require('./routes/Admin_router');
+require('dotenv').config();
+const PORT = process.env.port || 3000;
 app.use("/public", express.static(path.join(__dirname, "public")));
-
 
 app.use(express.json());
 async function initializeChroma() {
@@ -28,6 +31,7 @@ initializeChroma();
 connectDB();
 
 app.use("/api/applicants", applicantRouter);
+app.use("/api/admin", adminRouter);
 
 // Start the server
 app.listen(PORT, () => {
