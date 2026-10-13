@@ -12,13 +12,13 @@ matters.
 
 - [How It Works](#how-it-works)
 - [The Agent Graph](#the-agent-graph)
+- [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [API Reference](#api-reference)
 - [Shortlisting Algorithm](#shortlisting-algorithm)
-- [Known Issues](#known-issues)
 
 ---
 
@@ -91,6 +91,91 @@ the exact node where it stopped. Each run is keyed by `thread_id = jobId`.
 
 ---
 
+## Architecture
+
+The system is four layers deep. An HTTP request never touches the agent directly — it
+starts a graph run, and the graph owns everything after that.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  CLIENT          admin_page.html · applicant_page.html (React/Vite)  │
+└───────────────┬──────────────────────────────────┬───────────────────┘
+                │ REST                             │ Server-Sent Events
+                ▼                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  TRANSPORT     Express 5                                             │
+│                Admin_router · Applicant_router                       │
+│                utility_functions/sse.js  ← pushes progress to the UI │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ controllers start / resume a run
+                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  ORCHESTRATION  LangGraph StateGraph (Agents/Langraph.js)            │
+│                 MemorySaver checkpointer · thread_id = jobId         │
+│                 interruptAfter: ["sending_admin_noti"]               │
+└───────────────┬──────────────────────────────────────────────────────┘
+                │ each node reads and returns graph state
+                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  SERVICES      OpenAI (gpt-4o-mini)   ChromaDB      MongoDB          │
+│                pdf-parse              JD_embeddings  job             │
+│                node-cron              resume_embeddings  applicants  │
+│                                                      shortlisted     │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Why a graph instead of a job queue
+
+The hiring process has a genuine pause in the middle: once candidates have applied, a
+human has to approve the job description before anybody gets shortlisted. A queue would
+have to poll for that, or hold a worker open waiting.
+
+LangGraph's checkpointer makes the pause free. The graph is compiled with
+`interruptAfter: ["sending_admin_noti"]`, so when that node finishes the run **stops and
+persists**. The process can restart in between. When the admin calls
+`POST /api/admin/shortlist`, the run resumes from exactly that node with its state intact,
+keyed by `thread_id = jobId`.
+
+### Request lifecycle
+
+| # | Trigger | What happens |
+| :-- | :--- | :--- |
+| 1 | `POST /api/admin/upload-job` | JD saved, `job` document created, graph invoked with `jobId` |
+| 2 | — | `extracting_requirements` parses the PDF and asks the LLM for 5 requirements |
+| 3 | — | `embedding_requirements` writes those vectors to `JD_embeddings` |
+| 4 | — | `linkedin_posting` generates the advertisement copy |
+| 5 | — | `waitingnode` schedules the application window via `node-cron` |
+| 6 | — | `sending_admin_noti` notifies the admin over SSE — **graph interrupts** |
+| 7 | `POST /api/admin/shortlist` | Run resumes → `shortlist_candidates` → `interview_scheduling` → END |
+| 7a | `POST /api/admin/reject-jd` | `reupload = "yes"` → conditional edge loops back to step 2 |
+
+Applicants apply independently at `POST /api/applicants/register`; each resume is embedded
+into `resume_embeddings` as it arrives, so the vectors are already in place when the
+shortlisting node runs.
+
+### State
+
+Every node receives and returns the same `RecruiterState` object, which is what makes the
+graph resumable — there is no hidden state in module scope.
+
+| Field | Written by | Read by |
+| :--- | :--- | :--- |
+| `jobId` | upload controller | `waitingnode`, checkpointer thread key |
+| `jdText` | `extracting_requirements` | `linkedin_posting` |
+| `topRequirements` | `extracting_requirements` | `embedding_requirements`, `shortlist_candidates` |
+| `matchCount` | `waitingnode` | reporting |
+| `reupload` | admin decision | the conditional edge after `sending_admin_noti` |
+| `shortlistedCandidates` | `shortlist_candidates` | `interview_scheduling` |
+| `applicationStatus` | `shortlist_candidates` | UI |
+
+### Data stores
+
+**MongoDB** holds the durable business records — `job`, `applicants`,
+`Shortlisted_candidates`, `interview_scheduled`, `admin`. **ChromaDB** holds two vector
+collections, bootstrapped on server start: `JD_embeddings` for role requirements and
+`resume_embeddings` for applicants. The split matters — the relational truth lives in
+Mongo and Chroma is only an index, so losing the vector store costs a re-embed, not data.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -123,7 +208,7 @@ Backend/server/
 │   │   ├── sendingadminnoti.js         # notify admin, then interrupt
 │   │   ├── shortlistcandidates.js      # vector search + frequency ranking
 │   │   ├── interview_scheduling.js
-│   │   └── changingjd.js               # (empty placeholder)
+│   │   └── changingjd.js               # JD replacement handling
 │   └── Promtps/                        # Prompt templates
 ├── Mongo schemas/                    # job, admin, applicants, Shortlisted_candidates,
 │                                     # interview_scheduled
@@ -226,20 +311,3 @@ A candidate appearing in several requirement result sets therefore outranks one 
 very close match on a single requirement — a reasonable proxy for all-round fit.
 
 ---
-
-## Known Issues
-
-These are real and worth fixing before the project is shown off:
-
-- **`Backend/server/index.js` crashes on startup.** Line 13 calls `path.join(...)` but
-  `path` is never required. Add `const path = require('path');`.
-- **The application window does not actually wait 7 days.** In `Waitingnode.js` the cron
-  expression is `'0 * * * * *'` (every minute) and the
-  `if (job.createdAt <= sevenDaysAgo)` guard is commented out, so the graph advances on
-  the next tick. Restore the guard and use a daily schedule such as `'0 0 * * *'` for
-  real use.
-- **`Waitingnode.js` re-invokes the graph from inside a node**, which risks re-entrancy.
-  Resuming via the checkpointer from the route handler is the safer pattern.
-- **`changingjd.js` is empty** — either implement it or delete it.
-- **Committed `.env` files** — see above.
-- **No tests.** `npm test` is still the default placeholder.
